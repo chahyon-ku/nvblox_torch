@@ -29,6 +29,15 @@ ADD_DEFINITIONS(-DPRE_CXX11_ABI_LINKABLE)
 
 SET(nvblox_link_options "-Wl,--disable-new-dtags")
 
+# cuda 12.8 dropped the CUDA::nvToolsExt target that torch's own cuda.cmake still asks for; nvtx3
+# is header only, so an interface target pointing at its headers is all torch needs to find.
+find_package(CUDAToolkit REQUIRED)
+if(NOT TARGET CUDA::nvToolsExt)
+    add_library(CUDA::nvToolsExt INTERFACE IMPORTED)
+    set_target_properties(CUDA::nvToolsExt PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${NVTX_INCLUDE_DIR}")
+endif()
+
 find_package(Torch REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
